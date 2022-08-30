@@ -1,0 +1,63 @@
+X=affected x
+x= clear x
+y=y
+Affected male down/clear female across= 
+// x  x
+X  Xx Xx
+y  xy xy
+
+Results: 
+Xx=Carrier Female
+xy=Clear male
+
+
+Affected male down/carrier female across= 
+// X  x
+X  XX Xx
+y  xy xy
+
+Results: 
+Xx=Carrier Female
+xy=Clear male
+XX=Affected female
+
+
+Affected male down/Affected female across= 
+// X  X
+X  XX XX
+y  Xy Xy
+
+Results: 
+XX=Affected Female
+xy=Affected male
+
+
+clear male down/clear female across= 
+// x  x
+x  xx xx
+y  xy xy
+
+Results: 
+xx=Cear Female
+xy=Clear male
+
+
+clear male down/carrier female across= 
+// X  x
+X  Xx xx
+y  Xy xy
+
+Results: 
+Xx=Carrier Female
+xx=Clear female
+Xy=Affected male
+xy=Clear male
+
+clear male down/Affected female across= 
+// X  X
+X  Xx Xx
+y  xy xy
+
+Results: 
+Xx=Carrier Female
+xy=Clear male
