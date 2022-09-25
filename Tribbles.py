@@ -86,7 +86,8 @@ def expression(gene_code):
                     else:
                         print("Error: p_codom lookup failed")
                         break
-                        # This is meant to be an unreachable state. If this occurs, then the gene code is most likely invalid.
+                        # This is meant to be an unreachable state. If this occurs, then the gene code is most likely
+                        # invalid.
             potential_codom = gene
         if pheno_list[item] == "":
             pheno_list[item] = phenotypes[gene_code[item][0]]
