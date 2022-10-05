@@ -1,53 +1,76 @@
-# Import and initialize the pygame library
 import pygame
-import random
-from pygame.locals import *
+from sys import exit
+
 pygame.init()
-# Set up the drawing window
-screen = pygame.display.set_mode([1000, 1000])
+screen = pygame.display.set_mode((1000, 800))
+pygame.display.set_caption("Tribble Farm")
+clock = pygame.time.Clock()
 
-adam_image = pygame.image.load("Sample_Tribble.gif")
-field = pygame.image.load("field.gif")
-FPS = 60
-FramePerSec = pygame.time.Clock()
+Traits = ("sex", "fur_color", "spottiness", "spot_color", "eye_color", "longevity", "sturdiness", "appetite", "alopecia")
 
 
-class Tribble(pygame.sprite.Sprite):
-    def __init__(self, name):
-        super().__init__()
-        self.image = adam_image
-        self.rect = self.image.get_rect()
-        self.rect.center = (500, 500)
+def dominant_allele(alleles):
+    for allele in alleles:
+        if allele.isupper():
+            return allele
+    return alleles[0]
+
+
+class Tribble:
+    def __init__(self, genecode, name):
+        self.genecode = genecode
         self.name = name
-    def draw(self, surface):
-        surface.blit(self.image, self.rect)
+        self.phenotypes = {}
+        self.age = 0
 
-    def move(self):
-        self.rect.move_ip(random.choice([0, 10, -10]), random.choice([0, 10]))
+        for gene in self.genecode:
+            if gene not in Traits:
+                print(f"Houston, we have a problem. {self.name} has an unlisted gene named {gene}")
+            alleles = genecode[gene]
+            if alleles[0] == alleles[1] and alleles[0].isupper():
+                self.zygousy = "Homozygous_Dominant"
+            elif alleles[0] == alleles[1]:
+                self.zygousy = "Homozygous recessive"
+            elif alleles[0] != alleles[1]:
+                self.zygousy = "Heterozygous"
+            else:
+                print(f"Houston, we have a problem. Logic is broken.")
 
-        if self.rect.center[1] > 1000:
+            match gene:
+                case "eye_color":
+                    match dominant_allele(alleles):
+                        case "B":
+                            self.eye_color = "brown"
+                        case "u":
+                            self.eye_color = "blue"
+                case "sex":
+                    match dominant_allele(alleles):
+                        case "x":
+                            self.sex = "Female"
+                        case "Y":
+                            self.sex = "Male"
 
-            self.rect.center = (self.rect.center[0], 0)
+    def breed(self, partner):
+        if partner.sex == self.sex:
+            return "breed_fail:same_sex"
+        for trait in self.genecode:
+            partnergene = partner.genecode[trait]
+            selfgene = self.genecode[trait]
+
+    def description(self):
+        return f"This is {self.name}. {self.name} is a {self.sex} tribble with {self.eye_color} eyes"
 
 
-Tribble1 = Tribble("Adam")
+Tribbles = {"Adam": eval("Tribble")({"sex": ["x", "Y"], "eye_color": ["B", "u"]}, "Adam")}
 
-# Run until the user asks to quit
-running = True
-while running:
+surface1 = pygame.Surface((100, 100))
+surface1.fill("cadet blue")
 
-    # Did the user click the window close button?
+while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:
-                # if TribInst.collidepoint(event.pos):
-                pass
-    Tribble1.move()
-    screen.blit(field, (0,0))
-    Tribble1.draw(screen)
+            pygame.quit()
+            exit()
+    screen.blit(surface1, (200, 100))
     pygame.display.update()
-    FramePerSec.tick(FPS)
-# Done! Time to quit.
-pygame.quit()
+    clock.tick(60)
