@@ -110,6 +110,11 @@ def breeding_failure():
     print("The Tribbles had a lot of fun, but no baby")
 
 
+class Tribble:
+    def __init__(self, genecode):
+        self.genecode = genecode
+
+
 def create_child(parent1, parent2):
     if expression(parent1)["sex"] == expression(parent2)["sex"]:
         return breeding_failure
