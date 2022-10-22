@@ -7,10 +7,15 @@ screen = pygame.display.set_mode((800, 800))
 pygame.display.set_caption("Tribble Farm")
 clock = pygame.time.Clock()
 mouse_pointer = ()
-midscreen = 0
+midscreen = 1
 current_customer = ""
+black = (0, 0, 0)
+text1 = ""
+text2 = ""
+clickimmunity = False
+paused = False
+tribbledraw = screen
 
-Traits = ("sex", "fur_color", "spottiness", "spot_color", "eye_color", "longevity", "sturdiness", "fertility", "alopecia")
 images = {
     "Tribble_skeleton": pygame.image.load("Art/Tribbles/Tribble Parts/Skeletons/Tribble_Skeleton.png").convert_alpha(),
     "Blue_spots": pygame.image.load("Art/Tribbles/Tribble Parts/Spots/Blue_Spots.png").convert_alpha(),
@@ -29,18 +34,30 @@ images = {
     "Yellow_fur": pygame.image.load("Art/Tribbles/Tribble Parts/Body Fur/Yellow_Fur.png").convert_alpha(),
     "White_fur": pygame.image.load("Art/Tribbles/Tribble Parts/Body Fur/White_Fur.png").convert_alpha(),
     "Black_fur": pygame.image.load("Art/Tribbles/Tribble Parts/Body Fur/Black_Fur.png").convert_alpha(),
-    "Blue_eyes_left": pygame.image.load("Art/Tribbles/Tribble Parts/Eye colors/Sky_Blue_Irises_Looking_left.png").convert_alpha(),
-    "Blue_eyes_right": pygame.image.load("Art/Tribbles/Tribble Parts/Eye colors/Sky_Blue_Irises_Looking_right.png").convert_alpha(),
-    "Blue_eyes_forward": pygame.image.load("Art/Tribbles/Tribble Parts/Eye colors/Sky_Blue_Irises_Looking_forward.png").convert_alpha(),
-    "Brown_eyes_forward": pygame.image.load("Art/Tribbles/Tribble Parts/Eye colors/Brown_Irises_Looking_forward.png").convert_alpha(),
-    "Brown_eyes_left": pygame.image.load("Art/Tribbles/Tribble Parts/Eye colors/Brown_Irises_Looking_left.png").convert_alpha(),
-    "Brown_eyes_right": pygame.image.load("Art/Tribbles/Tribble Parts/Eye colors/Brown_Irises_Looking_right.png").convert_alpha(),
-    "Red_eyes_right": pygame.image.load("Art/Tribbles/Tribble Parts/Eye colors/Red_Irises_Looking_right.png").convert_alpha(),
-    "Red_eyes_left": pygame.image.load("Art/Tribbles/Tribble Parts/Eye colors/Red_Irises_Looking_left.png").convert_alpha(),
-    "Red_eyes_forward": pygame.image.load("Art/Tribbles/Tribble Parts/Eye colors/Red_Irises_Looking_forward.png").convert_alpha(),
-    "Eyes_look_forward": pygame.image.load("Art/Tribbles/Tribble Parts/Gaze Direction/Eyes_Looking_Forward.png").convert_alpha(),
-    "Eyes_look_left": pygame.image.load("Art/Tribbles/Tribble Parts/Gaze Direction/Eyes_Looking_Left.png").convert_alpha(),
-    "Eyes_look_right": pygame.image.load("Art/Tribbles/Tribble Parts/Gaze Direction/Eyes_Looking_Right.png").convert_alpha(),
+    "Blue_eyes_left": pygame.image.load(
+        "Art/Tribbles/Tribble Parts/Eye colors/Sky_Blue_Irises_Looking_left.png").convert_alpha(),
+    "Blue_eyes_right": pygame.image.load(
+        "Art/Tribbles/Tribble Parts/Eye colors/Sky_Blue_Irises_Looking_right.png").convert_alpha(),
+    "Blue_eyes_forward": pygame.image.load(
+        "Art/Tribbles/Tribble Parts/Eye colors/Sky_Blue_Irises_Looking_forward.png").convert_alpha(),
+    "Brown_eyes_forward": pygame.image.load(
+        "Art/Tribbles/Tribble Parts/Eye colors/Brown_Irises_Looking_forward.png").convert_alpha(),
+    "Brown_eyes_left": pygame.image.load(
+        "Art/Tribbles/Tribble Parts/Eye colors/Brown_Irises_Looking_left.png").convert_alpha(),
+    "Brown_eyes_right": pygame.image.load(
+        "Art/Tribbles/Tribble Parts/Eye colors/Brown_Irises_Looking_right.png").convert_alpha(),
+    "Red_eyes_right": pygame.image.load(
+        "Art/Tribbles/Tribble Parts/Eye colors/Red_Irises_Looking_right.png").convert_alpha(),
+    "Red_eyes_left": pygame.image.load(
+        "Art/Tribbles/Tribble Parts/Eye colors/Red_Irises_Looking_left.png").convert_alpha(),
+    "Red_eyes_forward": pygame.image.load(
+        "Art/Tribbles/Tribble Parts/Eye colors/Red_Irises_Looking_forward.png").convert_alpha(),
+    "Eyes_look_forward": pygame.image.load(
+        "Art/Tribbles/Tribble Parts/Gaze Direction/Eyes_Looking_Forward.png").convert_alpha(),
+    "Eyes_look_left": pygame.image.load(
+        "Art/Tribbles/Tribble Parts/Gaze Direction/Eyes_Looking_Left.png").convert_alpha(),
+    "Eyes_look_right": pygame.image.load(
+        "Art/Tribbles/Tribble Parts/Gaze Direction/Eyes_Looking_Right.png").convert_alpha(),
     "Option_Button": pygame.image.load("Art/UI/Option_Button.png").convert_alpha(),
     "Left_Button": pygame.image.load("Art/UI/Side_Button_Left.png").convert_alpha(),
     "Right_Button": pygame.image.load("Art/UI/Side_Button_Right.png").convert_alpha(),
@@ -53,33 +70,78 @@ images = {
     "Food_Bowl": pygame.image.load("Art/Food_Bowl.png").convert_alpha(),
     "Water_Bowl": pygame.image.load("Art/Water_Bowl.png").convert_alpha(),
     "Office": pygame.image.load("Art/Office.png").convert_alpha(),
-    "Hill": pygame.image.load("Art/Top_Screen_Hill.png").convert_alpha()
+    "Hill": pygame.image.load("Art/Top_Screen_Hill.png").convert_alpha(),
+    "Love_Hut": pygame.image.load("Art/Love_Hut.png").convert_alpha(),
+    "Text_Area": pygame.image.load("Art/UI/Text_Area.png").convert_alpha(),
+    "Paused": pygame.image.load("Art/UI/Paused.png").convert_alpha()
 }
+
+Traits = (
+"sex", "fur_color", "spottiness", "spot_color", "eye_color", "longevity", "sturdiness", "fertility", "alopecia")
 colors = {"R": "red", "Y": "yellow", "U": "blue", "B": "black", "W": "white"}
-partials = {("blue", "red"): "purple", ("blue", "yellow"): "green", ("red", "yellow"): "orange", ("black", "white"): "grey"}
+partials = {("blue", "red"): "purple", ("blue", "yellow"): "green", ("red", "yellow"): "orange",
+            ("black", "white"): "grey"}
 
 field_rect = images["Field"].get_rect(topleft=(0, 200))
+mytext = pygame.font.Font("freesansbold.ttf", 20)
+tbspace = images["Text_Area"].get_rect(topleft=(101, 630))
+Active_Tribble = None
+
+
+def onedge(rect):
+    edge = random.choice(["top", "bottom", "left", "right"])
+    match edge:
+        case "top":
+            return random.randint(rect.topleft[0], rect.topright[0]), rect.top
+        case "bottom":
+            return random.randint(rect.bottomleft[0], rect.bottomright[0]), rect.bottom
+        case "left":
+            return rect.left, random.randint(rect.topleft[1], rect.bottomleft[1])
+        case "right":
+            return rect.right, random.randint(rect.topright[1], rect.bottomright[1])
+
+
+def text_objects(text, font):
+    textsurface = font.render(text, True, black)
+    return textsurface, textsurface.get_rect()
 
 
 def domrec_alleles(alleles2):
-    x = []
-    y = []
+    allelex = []
+    alleley = []
     for a in alleles2:
-        y.append(a)
+        alleley.append(a)
     for allele in alleles2:
         if allele.isupper():
-            x.append(allele)
-            y.remove(allele)
-    return [x, y]
+            allelex.append(allele)
+            alleley.remove(allele)
+    return [allelex, alleley]
 
 
 def name_babies(babies):
     pass
 
 
-class Tribble(pygame.sprite.Sprite):
+class Button:
+    def __init__(self, location):
+        self.location = location
+        self.pushed = False
+
+    def update(self):
+        self.pushed = False
+        if left:
+            if self.rect.collidepoint(mouse_pointer):
+                self.pushed = True
+
+    def draw(self):
+        screen.blit(self.image, self.location)
+
+
+class Tribble(Button):
     def __init__(self, genecode, name):
-        super().__init__()
+        self.image = images["Tribble_skeleton"]
+        self.rect = self.image.get_rect(topleft=(300, 300))
+        super().__init__(self.rect.center)
         if len(genecode) != len(Traits):
             pass
         self.genecode = genecode
@@ -90,153 +152,87 @@ class Tribble(pygame.sprite.Sprite):
         self.goal = ()
         self.image = images["Tribble_skeleton"]
         self.rect = self.image.get_rect(topleft=(300, 300))
+        self.collisions = False
+        self.active = False
 
         for gene in self.genecode:
             if gene not in Traits:
                 print(f"Houston, we have a problem. {self.name} has an unlisted gene named {gene}")
-            alleles = genecode[gene]
-            allele_count = len(alleles)
-            if allele_count != 2:
-                print(f"Houston, we have a problem. {self.name} does not have the correct amount of alleles. They have {allele_count} alleles.")
-            if alleles[0] == alleles[1] and alleles[0].isupper():
-                self.zygousy = "Homozygous_Dominant"
-            elif alleles[0] == alleles[1]:
-                self.zygousy = "Homozygous recessive"
-            elif alleles[0] != alleles[1]:
-                self.zygousy = "Heterozygous"
-            else:
-                print(f"Houston, we have a problem. Logic is broken.")
+            alleles = domrec_alleles(genecode[gene])
 
             match gene:
                 case "eye_color":
-                    print(domrec_alleles(alleles))
-                    if len(domrec_alleles(alleles)[0]) == 0:
-                        match domrec_alleles(alleles)[1][0]:
+                    print(alleles)
+                    if len(alleles[0]) == 0:
+                        match alleles[1][0]:
                             case "u":
                                 self.eye_color = "sky blue"
                     else:
-                        print(domrec_alleles(alleles)[0][0])
-                        match domrec_alleles(alleles)[0][0]:
+                        print(alleles[0][0])
+                        match alleles[0][0]:
                             case "B":
                                 self.eye_color = "Brown"
                 case "sex":
-                    if len(domrec_alleles(alleles)[0]) == 0:
-                        match domrec_alleles(alleles)[1][0]:
-                            case "Y":
-                                self.sex = "male"
-                    else:
-                        match domrec_alleles(alleles)[0][0]:
+                    if len(alleles[0]) == 0:
+                        match alleles[1][0]:
                             case "x":
                                 self.sex = "female"
+                    else:
+                        match alleles[0][0]:
+                            case "Y":
+                                self.sex = "male"
                 case "fur_color":
-                    if len(domrec_alleles(alleles)[0]) == 2 and (domrec_alleles(alleles)[0][0]) != (domrec_alleles(alleles)[0][1]) or (len(domrec_alleles(alleles)[1]) == 2 and (domrec_alleles(alleles)[1][0]) != (domrec_alleles(alleles)[1][1])):
+                    if len(alleles[0]) == 2 and (alleles[0][0]) != (alleles[0][1]) or (
+                            len(alleles[1]) == 2 and (alleles[1][0]) != (alleles[1][1])):
                         mixer = []
+                        if len(alleles[0]) == 2:
+                            alleles = alleles[0]
+                        elif len(alleles[1]) == 2:
+                            alleles = alleles[1]
+                        else:
+                            print("Houston, we have a problem. Logic is broken.")
                         for color in alleles:
+                            print(color)
                             color = colors[color]
                             mixer.append(color)
                         self.fur_color = partials[tuple(sorted(mixer))]
-                    elif len(domrec_alleles(alleles)[0]) == 0:
-                        self.fur_color = colors[domrec_alleles(alleles)[1][0]]
+                    elif len(alleles[0]) == 0:
+                        self.fur_color = colors[alleles[1][0]]
                     else:
-                        self.fur_color = colors[domrec_alleles(alleles)[0][0]]
+                        self.fur_color = colors[alleles[0][0]]
                 case "spottiness":
-                    print(domrec_alleles(alleles))
-                    if len(domrec_alleles(alleles)[0]) == 0:
-                        match domrec_alleles(alleles)[1][0]:
+                    print(alleles)
+                    if len(alleles[0]) == 0:
+                        match alleles[1][0]:
                             case "p":
                                 self.spots = False
                     else:
-                        print("f", domrec_alleles(alleles)[0][0])
-                        match domrec_alleles(alleles)[0][0]:
+                        print("f", alleles[0][0])
+                        match alleles[0][0]:
                             case "S":
                                 self.spots = True
                 case "spot_color":
-                    if len(domrec_alleles(alleles)[0]) == 2 and (domrec_alleles(alleles)[0][0]) != (domrec_alleles(alleles)[0][1]) or (len(domrec_alleles(alleles)[1]) == 2 and (domrec_alleles(alleles)[1][0]) != (domrec_alleles(alleles)[1][1])):
+                    if len(alleles[0]) == 2 and (alleles[0][0]) != (alleles[0][1]) or (
+                            len(alleles[1]) == 2 and (alleles[1][0]) != (alleles[1][1])):
                         mixer = []
+                        if len(alleles[0]) == 2:
+                            alleles = alleles[0]
+                        elif len(alleles[1]) == 2:
+                            alleles = alleles[1]
+                        else:
+                            print("Houston, we have a problem. Logic is broken.")
                         for color in alleles:
                             color = colors[color.upper()]
                             mixer.append(color)
                         self.spot_color = partials[tuple(sorted(mixer))]
-                    elif len(domrec_alleles(alleles)[0]) == 0:
-                        self.spot_color = colors[domrec_alleles(alleles)[1][0].upper()]
+                    elif len(alleles[0]) == 0:
+                        self.spot_color = colors[alleles[1][0].upper()]
                     else:
-                        self.spot_color = colors[domrec_alleles(alleles)[0][0]]
+                        self.spot_color = colors[alleles[0][0]]
                 case "fertility":
-                    self.fertility = len(domrec_alleles(alleles)[0])
+                    self.fertility = len(alleles[0])
                     if self.fertility > 0:
-                        self.fertility -= len(domrec_alleles(alleles)[1])
-
-        match self.eye_color:
-            case "Brown":
-                match self.looking:
-                    case "forward":
-                        self.image.blit(images["Eyes_look_forward"], (0, 0))
-                        self.image.blit(images["Brown_eyes_forward"], (0, 0))
-                    case "left":
-                        self.image.blit(images["Eyes_look_left"], (0, 0))
-                        self.image.blit(images["Brown_eyes_left"], (0, 0))
-                    case "right":
-                        self.image.blit(images["Eyes_look_right"], (0, 0))
-                        self.image.blit(images["Brown_eyes_right"], (0, 0))
-            case "sky blue":
-                match self.looking:
-                    case "forward":
-                        self.image.blit(images["Eyes_look_forward"], (0, 0))
-                        self.image.blit(images["Blue_eyes_forward"], (0, 0))
-                    case "left":
-                        self.image.blit(images["Eyes_look_left"], (0, 0))
-                        self.image.blit(images["Blue_eyes_left"], (0, 0))
-                    case "right":
-                        self.image.blit(images["Eyes_look_right"], (0, 0))
-                        self.image.blit(images["Blue_eyes_right"], (0, 0))
-
-            case "red":
-                match self.looking:
-                    case "forward":
-                        self.image.blit(images["Eyes_look_forward"], (0, 0))
-                        self.image.blit(images["Red_eyes_forward"], (0, 0))
-                    case "left":
-                        self.image.blit(images["Eyes_look_left"], (0, 0))
-                        self.image.blit(images["Red_eyes_left"], (0, 0))
-                    case "right":
-                        self.image.blit(images["Eyes_look_right"], (0, 0))
-                        self.image.blit(images["Red_eyes_right"], (0, 0))
-        match self.fur_color:
-            case "red":
-                self.image.blit(images["Red_fur"], (0, 0))
-            case "orange":
-                self.image.blit(images["Orange_fur"], (0, 0))
-            case "yellow":
-                self.image.blit(images["Yellow_fur"], (0, 0))
-            case "green":
-                self.image.blit(images["Green_fur"], (0, 0))
-            case "blue":
-                self.image.blit(images["Blue_fur"], (0, 0))
-            case "purple":
-                self.image.blit(images["Purple_fur"], (0, 0))
-            case "white":
-                self.image.blit(images["White_fur"], (0, 0))
-            case "black":
-                self.image.blit(images["Black_fur"], (0, 0))
-
-        if self.spots == "spotted":
-            match self.spot_color:
-                case "red":
-                    self.image.blit(images["Red_spots"], (0, 0))
-                case "orange":
-                    self.image.blit(images["Orange_spots"], (0, 0))
-                case "yellow":
-                    self.image.blit(images["Yellow_spots"], (0, 0))
-                case "green":
-                    self.image.blit(images["Green_spots"], (0, 0))
-                case "blue":
-                    self.image.blit(images["Blue_spots"], (0, 0))
-                case "purple":
-                    self.image.blit(images["Purple_spots"], (0, 0))
-                case "white":
-                    self.image.blit(images["White_spots"], (0, 0))
-                case "black":
-                    self.image.blit(images["Black_spots"], (0, 0))
+                        self.fertility -= len(alleles[1])
 
     def breed(self, partner):
         if partner.sex == self.sex:
@@ -244,7 +240,7 @@ class Tribble(pygame.sprite.Sprite):
         childcode = []
         babies = []
         fertbonus = max(self.fertility, partner.fertility)
-        broodsize = random.randint(1, 5+fertbonus)
+        broodsize = random.randint(1, 5 + fertbonus)
         for i in range(broodsize):
             for trait in self.genecode:
                 partnergene = partner.genecode[trait]
@@ -259,94 +255,341 @@ class Tribble(pygame.sprite.Sprite):
             desc += f" {self.name} has {self.spot_color} spots."
         return desc
 
-
     def move(self, xy):
         self.rect = self.rect.move(xy[0], xy[1])
-
 
     def moveto(self, coords):
         self.rect.center = coords
 
-
     def set_eyes(self):
-        if self.goal[0] < self.rect.left:
-            self.looking = "left"
-        elif self.goal[0] > self.rect.right:
-            self.looking = "right"
+        if self.goal:
+            if self.goal[0] < self.rect.left:
+                self.looking = "left"
+            elif self.goal[0] > self.rect.right:
+                self.looking = "right"
         else:
             self.looking = "forward"
 
-
     def movetowards(self, goal):
-        x = 0
-        y = 0
+        xcoord = 0
+        ycoord = 0
         if self.rect.left >= goal[0]:
-            x -= 1
+            xcoord -= 1
         elif self.rect.right <= goal[0]:
-            x += 1
+            xcoord += 1
         if self.rect.top >= goal[1]:
-            y -= 1
+            ycoord -= 1
         elif self.rect.bottom <= goal[1]:
-            y += 1
-        self.move((x, y))
+            ycoord += 1
+        self.move((xcoord, ycoord))
+
+    def draw(self, location):
+        screen.blit(self.image, location)
+        match self.eye_color:
+            case "Brown":
+                match self.looking:
+                    case "forward":
+                        screen.blit(images["Eyes_look_forward"], location)
+                        screen.blit(images["Brown_eyes_forward"], location)
+                    case "left":
+                        screen.blit(images["Eyes_look_left"], location)
+                        screen.blit(images["Brown_eyes_left"], location)
+                    case "right":
+                        screen.blit(images["Eyes_look_right"], location)
+                        screen.blit(images["Brown_eyes_right"], location)
+            case "sky blue":
+                match self.looking:
+                    case "forward":
+                        screen.blit(images["Eyes_look_forward"], location)
+                        screen.blit(images["Blue_eyes_forward"], location)
+                    case "left":
+                        screen.blit(images["Eyes_look_left"], location)
+                        screen.blit(images["Blue_eyes_left"], location)
+                    case "right":
+                        screen.blit(images["Eyes_look_right"], location)
+                        screen.blit(images["Blue_eyes_right"], location)
+
+            case "red":
+                match self.looking:
+                    case "forward":
+                        screen.blit(images["Eyes_look_forward"], location)
+                        screen.blit(images["Red_eyes_forward"], location)
+                    case "left":
+                        screen.blit(images["Eyes_look_left"], location)
+                        screen.blit(images["Red_eyes_left"], location)
+                    case "right":
+                        screen.blit(images["Eyes_look_right"], location)
+                        screen.blit(images["Red_eyes_right"], location)
+        match self.fur_color:
+            case "red":
+                screen.blit(images["Red_fur"], location)
+            case "orange":
+                screen.blit(images["Orange_fur"], location)
+            case "yellow":
+                screen.blit(images["Yellow_fur"], location)
+            case "green":
+                screen.blit(images["Green_fur"], location)
+            case "blue":
+                screen.blit(images["Blue_fur"], location)
+            case "purple":
+                screen.blit(images["Purple_fur"], location)
+            case "white":
+                screen.blit(images["White_fur"], location)
+            case "black":
+                screen.blit(images["Black_fur"], location)
+
+        if self.spots == "spotted":
+            match self.spot_color:
+                case "red":
+                    screen.blit(images["Red_spots"], location)
+                case "orange":
+                    screen.blit(images["Orange_spots"], location)
+                case "yellow":
+                    screen.blit(images["Yellow_spots"], location)
+                case "green":
+                    screen.blit(images["Green_spots"], location)
+                case "blue":
+                    screen.blit(images["Blue_spots"], location)
+                case "purple":
+                    screen.blit(images["Purple_spots"], location)
+                case "white":
+                    screen.blit(images["White_spots"], location)
+                case "black":
+                    screen.blit(images["Black_spots"], location)
 
     def update(self):
+        tribblerects = []
+        self.set_eyes()
+        for t in Tribble_list:
+            if Tribble_list[t] != self:
+                tribblerects.append(Tribble_list[t].rect)
         if self.goal == () or self.rect.collidepoint(self.goal):
-            self.goal = mouse_pointer
+            self.goal = onedge(field_rect)
         elif not field_rect.contains(self.rect):
-            self.goal = field_rect.center
+            self.goal = onedge(field_rect)
             self.movetowards(self.goal)
-            self.goal = mouse_pointer
+        elif not self.rect.collidelistall(obstacles) == [] or self.rect.collidelistall(
+                tribblerects) and self.collisions:
+            self.collisions = False
+            self.goal = onedge(field_rect)
+            self.movetowards(self.goal)
+        elif not self.rect.collidelistall(obstacles) and not self.rect.collidelistall(tribblerects):
+            self.collisions = True
+            self.movetowards(self.goal)
         else:
             self.movetowards(self.goal)
+        if left:
+            if self.rect.collidepoint(mouse_pointer):
+                global Active_Tribble
+                Active_Tribble = self
+
+
+class Lovehut:
+    def __init__(self, location, name):
+        super().__init__()
+        self.image = images["Love_Hut"]
+        self.location = location
+        self.rect = self.image.get_rect(topleft=self.location)
+
+    def draw(self):
+        screen.blit(self.image, self.location)
+
+
+class option_Button(Button):
+    def __init__(self, txt, location):
+        super().__init__(location)
+        self.txt = txt
+        self.image = images["Option_Button"]
+        self.rect = self.image.get_rect(topleft=self.location)
+        self.textsurf = text_objects(self.txt, mytext)[0]
+
+    def draw_text(self):
+        screen.blit(self.textsurf, self.location)
+
+
+class direc_Button(Button):
+    def __init__(self, direc, location):
+        super().__init__(location)
+        self.direc = direc
+        if self.direc == "left":
+            self.image = images["Left_Button"]
+        elif self.direc == "right":
+            self.image = images["Right_Button"]
+        else:
+            print("Houston, we have a problem. A direction button has been misnamed.")
+        self.rect = self.image.get_rect(topleft=self.location)
+
+
+class sustenance(Button):
+    def __init__(self, forw, location):
+        super().__init__(location)
+        self.name = forw
+        if self.name == "food":
+            self.image = images["Food_Bowl"]
+        elif self.name == "water":
+            self.image = images["Water_Bowl"]
+        else:
+            print("Houston, we have a problem. A sustenance bowl has been misnamed.")
+        self.rect = self.image.get_rect(topleft=self.location)
 
 
 Tribble_list = {
-    "Joe": pygame.sprite.GroupSingle(eval("Tribble")({"sex": ["x", "Y"], "eye_color": ["B", "u"], "spottiness": ["S", "p"], "fur_color": ["R", "U"], "spot_color": ["R", "U"], "fertility": ["F", "f"]}, "Joe")),
-    "Eve": pygame.sprite.GroupSingle(eval("Tribble")({"sex": ["x", "x"], "eye_color": ["u", "u"], "spottiness": ["p", "p"], "fur_color": ["R", "w"], "spot_color": ["b", "b"], "fertility": ["F", "F"]}, "Eve"))
+    "Joe": Tribble({"sex": ["x", "Y"], "eye_color": ["B", "u"], "spottiness": ["S", "p"], "fur_color": ["R", "U"],
+                    "spot_color": ["R", "U"], "fertility": ["F", "f"]}, "Joe"),
+    "Eve": Tribble({"sex": ["x", "x"], "eye_color": ["u", "u"], "spottiness": ["p", "p"], "fur_color": ["R", "w"],
+                    "spot_color": ["b", "b"], "fertility": ["F", "F"]}, "Eve")
 }
 
+opbuttons = {
+    "op1": option_Button("option 1", (101, 725)),
+    "op2": option_Button("option 2", (257, 725)),
+    "op3": option_Button("option 3", (413, 725)),
+    "op4": option_Button("option 4", (569, 725))
+}
+
+direc_Buttons = [
+    direc_Button("left", (13, 675)),
+    direc_Button("right", (737, 675))
+]
+
+sust = [
+    sustenance("food", (25, 230)),
+    sustenance("water", (25, 330))
+]
+
+lovehuts = [
+    Lovehut((725, 225), "LH1"),
+    Lovehut((725, 300), "LH2"),
+    Lovehut((725, 375), "LH3"),
+]
+
+obstacles = [
+]
+
+for x in lovehuts:
+    obstacles.append(x.rect)
+for x in sust:
+    obstacles.append(x.rect)
+'''
+def choosetribbledropdown():
+    screen.blit(frame, placeholder)
+    screen.blit(choicefield)
+    arrow.draw()
+    if Active_Tribble:
+        screen.blit(Active_Tribble, nexttothechoicefield(right))
+    else:
+        screen.blit(Active_Tribble, nexttothechoicefield(right))
+    confirmbutton.draw()
+    screen.blit(textobjects(confirmbuttontext, mytext)[0](placeholder))
+    if arrow is clicked:
+        start clickimmunity
+        dd = "open":
+    if dd == "open":
+        for tribble in tribblelist:
+            if counter<5
+                counter+=1
+                menuop.draw()
+                screen.blit(textobjects(tribble.name, mytext)[0](placeholder, placeholder+50*counter))
+                screen.blit(tribble, (placeholder+100, placeholder+50*counter))
+
+
+'''
 
 
 def devcheat():
     global midscreen
     global current_customer
     global mouse_pointer
-    midscreen = 1
     current_customer = "Beret_Lady"
     # mouse_pointer = (500, 500)
+    global text1, text2
 
+    text2 = "I'm still waiting on my red tribbles."
+
+
+text1 = "This is box text!"
 
 while True:
     for event in pygame.event.get():
-        if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+        if event.type == pygame.QUIT:
             pygame.quit()
             exit()
+        if event.type == pygame.MOUSEBUTTONUP:
+            clickimmunity = False
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            paused = not paused
+            pausetext = "Game Paused"
+    left, middle, right = pygame.mouse.get_pressed()
     mouse_pointer = pygame.mouse.get_pos()
+
     devcheat()
 
     screen.blit(images["Upper_Strip"], (0, 0))
     screen.blit(images["Hill"], (230, 107))
-
     screen.blit(images["Text_Box"], (0, 600))
-    screen.blit(images["Option_Button"], (101, 725))
-    screen.blit(images["Option_Button"], (257, 725))
-    screen.blit(images["Option_Button"], (413, 725))
-    screen.blit(images["Option_Button"], (569, 725))
-    screen.blit(images["Left_Button"], (13, 675))
-    screen.blit(images["Right_Button"], (737, 675))
+
+    if not paused:
+        match midscreen:
+            case 1:
+                screen.blit(images["Field"], (0, 200))
+                for tribble in Tribble_list:
+                    Tribble_list[tribble].update()
+                    Tribble_list[tribble].draw(Tribble_list[tribble].rect.topleft)
+                    for x in Tribble_list[tribble].rect.collidelistall(obstacles):
+                        print("Test " + tribble, obstacles[x].topleft)
+
+                for lovehut in lovehuts:
+                    lovehut.draw()
+                for sus in sust:
+                    sus.draw()
+                if Active_Tribble:
+                    text1 = Active_Tribble.description()
+
+                screen.blit(text_objects(text1, mytext)[0], (101, 630))
+
+            case 2:
+                screen.blit(images["Office"], (0, 200))
+                screen.blit(images[current_customer], (235, 249))
+                screen.blit(text_objects(text2, mytext)[0], (101, 630))
+
+        for button in opbuttons:
+            opbuttons[button].draw()
+            opbuttons[button].draw_text()
+            opbuttons[button].update()
+        for button in direc_Buttons:
+            button.draw()
+            button.update()
+            if button.pushed and not clickimmunity:
+                midscreen += 1
+                if midscreen >= 3:
+                    midscreen = 1
+                clickimmunity = True
+
+        pygame.display.update()
+        clock.tick(60)
 
 
-    match midscreen:
-        case  1:
-            screen.blit(images["Field"], (0, 200))
-            for tribble in Tribble_list:
-                Tribble_list[tribble].update()
-                Tribble_list[tribble].draw(screen)
-            screen.blit(images["Food_Bowl"], (25, 230))
-            screen.blit(images["Water_Bowl"], (25, 330))
-        case  2:
-            screen.blit(images["Office"], (0, 200))
-            screen.blit(images[current_customer], (235, 249))
-    pygame.display.update()
-    clock.tick(60)
+    else:
+        match midscreen:
+            case 1:
+                screen.blit(images["Field"], (0, 200))
+                for lovehut in lovehuts:
+                    lovehut.draw()
+                for sus in sust:
+                    sus.draw()
+                for tribble in Tribble_list:
+                    Tribble_list[tribble].draw(Tribble_list[tribble].rect.topleft)
+            case 2:
+                screen.blit(images["Office"], (0, 200))
+                screen.blit(images[current_customer], (235, 249))
+
+        screen.blit(text_objects(pausetext, mytext)[0], (101, 630))
+        for button in opbuttons:
+            opbuttons[button].draw()
+            opbuttons[button].draw_text()
+            opbuttons[button].update()
+        for button in direc_Buttons:
+            button.draw()
+        screen.blit(images["Paused"], (300, 280))
+        pygame.display.update()
+        clock.tick(60)
