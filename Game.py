@@ -135,14 +135,15 @@ class Button:
 
 
 class Tribble(Button):
-    def __init__(self, genecode, name):
+    namecount=0
+    def __init__(self, genecode, name=""):
         self.image = images["Tribble_skeleton"]
         self.rect = self.image.get_rect(topleft=(300, 300))
         super().__init__(self.rect.center)
         if len(genecode) != len(Traits):
             pass
         self.genecode = genecode
-        self.name = name
+        self.name = name or self.generate_name()
         self.phenotypes = {}
         self.age = 0
         self.looking = "forward"
@@ -231,6 +232,11 @@ class Tribble(Button):
                     if self.fertility > 0:
                         self.fertility -= len(alleles[1])
 
+    @classmethod
+    def generate_name(cls):
+        cls.namecount += 1
+        return f"c{cls.namecount}"
+
     def breed(self, partner):
         if partner.sex == self.sex:
             return "breed_fail:same_sex"
@@ -243,11 +249,11 @@ class Tribble(Button):
                 partnergene = partner.genecode[trait]
                 selfgene = self.genecode[trait]
                 childcode[trait] = [random.choice(selfgene), random.choice(partnergene)]
-            name= i+1
-            while "child " + str(name) in Tribble_list:
-                name+=1
-            print (name)
-            Tribble_list[f"child {name}"]=(Tribble(childcode, f"child {name}"))
+            child=Tribble(childcode)
+            Tribble_list[child.name]=(child)
+            print(child.name)
+            print (child.genecode)
+            print(" -- ")
         self.breedmode = True
         partner.breedmode = True
         return babies
@@ -511,18 +517,18 @@ def choosetribbledropdown():
 
 
 '''
-
-
+text1_1=""
+text2_1=""
 def devcheat():
-    global midscreen, current_customer, mouse_pointer, options, text1, text2
+    global midscreen, current_customer, mouse_pointer, options, text1, text1_1, text2, text2_1
     # mouse_pointer = (500, 500)
 options = [["???", "??????", "???", "???"], ["???", "???", "???", "???"], ["???", "???", "???", "???"]]
 
 
 text2 = "I'm still waiting on my three red tribbles."
-text1 = "This is box text!"
+text1 = "Click a tribble!"
 current_customer = "Beret_Lady"
-
+satisfied=False
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -545,7 +551,7 @@ while True:
     if not paused:
         match midscreen:
             case 1:
-                options[0] = [f"{'Breed with ' + Sex_partner.name if Sex_partner else '???'}", f"{'Sell (Table)' if Active_Tribble else '???'}", f"{'Sell (Market)' if Active_Tribble else '???'}", "???"]
+                options[0] = [f"{'Breed ' + Sex_partner.name if Sex_partner else '???'}", f"{'Sell (Table)' if Active_Tribble else '???'}", f"{'Sell (Market)' if Active_Tribble else '???'}", "???"]
                 screen.blit(images["Field"], (0, 200))
                 for tribble in Tribble_list:
                     button = Tribble_list[tribble]
@@ -566,9 +572,21 @@ while True:
                 if opbuttons["1"].clicked and Sex_partner != Active_Tribble:
                     Active_Tribble.breedmode = True
                     Sex_partner.breedmode = True
-                if opbuttons["2"].clicked and Active_Tribble:
+                elif opbuttons["2"].clicked and Active_Tribble:
+                    for trib in Tribble_list:
+                        Tribble_list[trib].breedmode = False
                     Table_Tribbles.append(Active_Tribble)
+                    print("table:")
+                    for tribble in Table_Tribbles:
+                        print(tribble.name)
+
                     Tribble_list.pop(Active_Tribble.name, None)
+                    Active_Tribble = None
+                elif opbuttons["3"].clicked and Active_Tribble:
+                    Tribble_list.pop(Active_Tribble.name, None)
+                    Active_Tribble=None
+                    text1="Click a tribble!"
+
                 if Active_Tribble and Active_Tribble.breedmode:
                     if Active_Tribble.rect.colliderect(lovehuts[0]) and Sex_partner.rect.colliderect(lovehuts[0]):
                         Active_Tribble.breed(Sex_partner)
@@ -578,43 +596,71 @@ while True:
                         Active_Tribble = False
                         Sex_partner = False
                 screen.blit(text_objects(text1, mytext)[0], (101, 630))
+                screen.blit(text_objects(text1_1, mytext)[0], (101, 650))
 
             case 2:
                 screen.blit(images["Office"], (0, 200))
-                if current_customer:
+                if current_customer and not satisfied:
                     screen.blit(images[current_customer], (235, 249))
                     options[1] = ["Offer Table", "'Later'", "'Get out.'", "Return Table"]
-                screen.blit(text_objects(text2, mytext)[0], (101, 630))
-
-                if opbuttons["1"].clicked:
-                    Acceptable = True
-                    for trib in Table_Tribbles:
-                        if trib.fur_color != "red":
+                    screen.blit(text_objects(text2, mytext)[0], (101, 630))
+                    screen.blit(text_objects(text2_1, mytext)[0], (101, 650))
+                    if opbuttons["1"].clicked:
+                        Acceptable = True
+                        tribcolors={'red':[]}
+                        tribbletally = f"{len(Table_Tribbles)} tribbles."
+                        for trib in Table_Tribbles:
+                            try:
+                                tribcolors[trib.fur_color].append(trib)
+                            except KeyError:
+                                tribcolors[trib.fur_color]=[trib]
+                            counter=0
+                            tribbletally=''
+                        for color in tribcolors:
+                            counter+=1
+                            if counter== len(tribcolors)-1:
+                                tribbletally += str(len(tribcolors[color])) + ' ' + color + ' tribble'+('s' if len(tribcolors[color])!=1 else '')+', and '
+                            elif counter==len(tribcolors):
+                                tribbletally += str(len(tribcolors[color])) + ' ' + color + ' tribble'+('s' if len(tribcolors[color])!=1 else '')+'.'
+                            else:
+                                tribbletally+=str(len(tribcolors[color]))+' '+color +' tribble'+('s' if len(tribcolors[color])!=1 else '')+', '
+                        for tribble in Table_Tribbles:
+                            print(tribble.name)
+                        print(tribbletally)
+                        print(tribcolors)
+                        if len(tribcolors["red"])<3:
                             Acceptable = False
-                            text2 = "Fool! I asked for RED tribbles! They all must be RED!"
-                    if len(Table_Tribbles) < 3:
-                        text2 = "I wanted THREE tribbles"
-                        Acceptable = False
-                    if len(Table_Tribbles) > 3 and Acceptable:
-                        text2 = "I appreciate your generosity. Here is a little extra."
-                        Table_Tribbles = []
+                        if len(Table_Tribbles) < 3:
+                            Acceptable = False
+                        if len(tribcolors['red'])> 3 and Acceptable:
+                            text2 = "'I appreciate your generosity. Here is a little extra.'"
+                            Table_Tribbles = []
+                            options[1] = ["???", "???", "???", "???"]
+                            satisfied=True
+                        elif Acceptable:
+                            text2 = "'Magnifique! Here is your pay.'"
+                            Table_Tribbles = []
+                            satisfied=True
+                            options[1] = ["???", "???", "???", "???"]
+                        else:
+                            text2 = f"'I wanted THREE RED tribbles. You gave me "
+                            text2_1 = tribbletally
+                    elif opbuttons["2"].clicked:
+                        text2 = "'I will return in four days.'"
+                        current_customer = None
                         options[1] = ["???", "???", "???", "???"]
-                    elif Acceptable:
-                        text2 = "Magnifique! Here is your pay."
+                    elif opbuttons["3"].clicked:
+                        text2 = "'I see I have been wasting my time here.'"
+                        current_customer = None
+                        options[1]=["???","???","???","???"]
+                    elif opbuttons["4"].clicked:
+                        for trib in Table_Tribbles:
+                            text2 = f"Table cleared. {len(Table_Tribbles)} tribbles have been returned to the field"
+                            Tribble_list[trib.name] = trib
                         Table_Tribbles = []
-                        options[1] = ["???", "???", "???", "???"]
-                elif opbuttons["2"].clicked:
-                    text2 = "I will return in four days."
-                    current_customer = None
-                    options[1] = ["???", "???", "???", "???"]
-                elif opbuttons["3"].clicked:
-                    text2 = "I see I have been wasting my time here."
-                    current_customer = None
-                    options[1]=["???","???","???","???"]
-                elif opbuttons["4"].clicked:
-                    for trib in Table_Tribbles:
-                        Tribble_list[trib.name] = trib
-                    Table_Tribbles = []
+                screen.blit(text_objects(text2, mytext)[0], (101, 630))
+                screen.blit(text_objects(text2_1, mytext)[0], (101, 650))
+
             case 3:
                 screen.fill(white)
                 screen.blit(images["Upper_Strip"], (0, 0))
